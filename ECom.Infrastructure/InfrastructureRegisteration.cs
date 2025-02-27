@@ -1,9 +1,12 @@
 ﻿using ECom.Core.Interfaces;
+using ECom.Core.Services;
 using ECom.Infrastructure.Data;
 using ECom.Infrastructure.Repositories;
+using ECom.Infrastructure.Repositories.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +22,10 @@ namespace ECom.Infrastructure
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             //Apply unit of work
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddSingleton<IFileProvider>(
+    new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
+);
+            services.AddSingleton<IImageManagementService, ImageManagementService>();
             //Apply dbcontext
             services.AddDbContext<AppDbContext>(op =>
                 {

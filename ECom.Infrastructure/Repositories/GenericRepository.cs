@@ -49,7 +49,7 @@ namespace ECom.Infrastructure.Repositories
         public async Task<T> GetByIdAsync(int id)
         {
             var entity = await _context.Set<T>().FindAsync(id);
-            return entity ?? throw new InvalidOperationException($"Entity with id {id} not found.");
+            return entity; //?? throw new InvalidOperationException();// ($"Entity with id {id} not found.");
         }
 
         public async Task<T> GetByIdAsync(int id, params Expression<Func<T, object>>[] includes)

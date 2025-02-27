@@ -20,7 +20,7 @@ namespace ECom.Infrastructure.Data.Config
                 Id = 1,
                 Name = "Test",
                 Description = "Test"
-            });
+            });            
         }
     }
 }

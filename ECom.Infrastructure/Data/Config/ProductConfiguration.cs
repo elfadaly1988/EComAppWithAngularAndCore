@@ -15,14 +15,14 @@ namespace ECom.Infrastructure.Data.Config
         {
             builder.Property(propertyExpression: p => p.Name).IsRequired();
             builder.Property(propertyExpression: p => p.Description).IsRequired();
-            builder.Property(propertyExpression: p => p.Price).HasColumnType(typeName: "decimal(18,2)").IsRequired();
+            builder.Property(propertyExpression: p => p.NewPrice).HasColumnType(typeName: "decimal(18,2)").IsRequired();
             builder.HasData(
                 new Product
                 {
                     Id = 1,
                     Name = "Test",
                     Description = "Test",
-                    Price = 100,                     
+                    NewPrice = 100,                     
                     CategoryId = 1
                 }
                 );
