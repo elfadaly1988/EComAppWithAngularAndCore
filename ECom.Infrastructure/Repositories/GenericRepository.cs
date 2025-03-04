@@ -24,6 +24,7 @@ namespace ECom.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
+
         public async Task DeleteAsync(int id)
         {
             var entity = await _context.Set<T>().FindAsync(id);
@@ -59,14 +60,16 @@ namespace ECom.Infrastructure.Repositories
             {
                 query = query.Include(item);
             }
-            var entity =await query.FirstOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
+            var entity = await query.FirstOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
             return entity;
         }
 
         public async Task UpdateAsync(T entity)
         {
-            var item = _context.Entry<T>(entity).State=EntityState.Modified;
+            var item = _context.Entry<T>(entity).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
+        public async Task<int> CountAsync() =>await _context.Set<T>().CountAsync();
+
     }
 }

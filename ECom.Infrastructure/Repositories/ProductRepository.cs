@@ -5,8 +5,10 @@ using ECom.Core.DTO;
 using ECom.Core.Entities.Product;
 using ECom.Core.Interfaces;
 using ECom.Core.Services;
+using ECom.Core.Sharing;
 using ECom.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +31,44 @@ namespace ECom.Infrastructure.Repositories
 
         }
 
+        public async Task<IEnumerable<ProductDTO>> GetAllAsync(ProductParam productParams)
+        {
+            var query = _context.Products
+                .Include(m => m.Category)
+                .Include(m => m.Photos)
+                .AsNoTracking();
+            //filtering by word
+
+            if (string.IsNullOrEmpty(productParams.Search))
+            {
+                var searchWords = productParams.Search.Split(' ');
+                query = query.Where(m => searchWords.All(word =>
+                m.Name.ToLower().Contains(word.ToLower()) 
+                ||
+                m.Description.ToLower().Contains(word.ToLower())
+                ));
+                    
+            }
+
+
+
+            //filtering by category ID 
+            if (productParams.CategoryId.HasValue) query = query.Where(m => m.CategoryId == productParams.CategoryId);
+            if (!string.IsNullOrEmpty(productParams.Sort))
+            {
+                query = productParams.Sort switch
+                {
+                    "PriceAsn" => query.OrderBy(m => m.NewPrice),
+                    "PriceDsc" => query.OrderByDescending(m => m.NewPrice),
+                    _ => query.OrderBy(m => m.NewPrice),
+                };
+            }
+            query = query.Skip((productParams.PageSize) * (productParams.PageNumber) - 1).Take(productParams.PageSize);
+            var result = _mapper.Map<List<ProductDTO>>(query);
+            return result;
+
+
+        }
         public async Task<bool> AddAsync(AddProductDTO productDTO)
         {
             if (productDTO == null) return false;
@@ -73,11 +113,11 @@ namespace ECom.Infrastructure.Repositories
         public async Task DeleteAsync(Product product)
         {
             var photo = await _context.Photos.Where(x => x.ProductId == product.Id).ToListAsync();
-            foreach(var item in photo)
+            foreach (var item in photo)
             {
                 _imageManagementService.DeleteImageAsync(item.ImageName);
             }
-             _context.Products.Remove(product);
+            _context.Products.Remove(product);
             await _context.SaveChangesAsync();
         }
     }

@@ -3,6 +3,7 @@ using ECom.Api.Helper;
 using ECom.Core.DTO;
 using ECom.Core.Entities.Product;
 using ECom.Core.Interfaces;
+using ECom.Core.Sharing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,21 +11,22 @@ namespace ECom.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProoductsController : BaseController
+    public class ProductsController : BaseController
     {
-        public ProoductsController(IUnitOfWork work, IMapper mapper) : base(work, mapper)
+        public ProductsController(IUnitOfWork work, IMapper mapper) : base(work, mapper)
         {
         }
         [HttpGet("get-all")]
-        public async Task<IActionResult> GetAllProducts()
+        public async Task<IActionResult> GetAllProducts([FromQuery] ProductParam productParams)
         {
             try
             {
                 var products = await work.ProductRepository
-                    .GetAllAsync(x => x.Category, x => x.Photos);
-                if (products is null) return BadRequest(new ResponseAPI(400));
-                var result = mapper.Map<List<ProductDTO>>(products);
-                return Ok(result);
+                    .GetAllAsync(productParams);
+                var totalCount = await work.ProductRepository.CountAsync();
+                //if (products is null) return BadRequest(new ResponseAPI(400));
+                //var result = mapper.Map<List<ProductDTO>>(products);
+                return Ok(new Pagination<ProductDTO>(productParams.PageNumber, productParams.PageSize, totalCount, products));
             }
             catch (Exception ex)
             {
@@ -60,7 +62,7 @@ namespace ECom.Api.Controllers
             catch (Exception ex)
             {
 
-                return BadRequest(new ResponseAPI(400,ex.Message));
+                return BadRequest(new ResponseAPI(400, ex.Message));
             }
         }
         [HttpPut("update-product")]
